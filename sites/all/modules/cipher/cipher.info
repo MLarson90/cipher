@@ -1,0 +1,5 @@
+name = Cipher
+description = Ciph
+package = custom
+core = 7.x
+files[] = cipher.module

@@ -1,0 +1,89 @@
+<?php
+ function cipher_menu(){
+   $items = array();
+   $items['cipher'] = array(
+     'title' => "cipher",
+     'type' => MENU_NORMAL_ITEM,
+     'access callback' => TRUE,
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('cipher_form'),
+   );
+   $items['cipher_success_page'] = array(
+  'title' => "Success",
+  'page callback' => 'cipher_success',
+  'access callback' => TRUE,
+  'type' => MENU_CALLBACK,
+  );
+   return $items;
+ }
+
+function cipher_form(){
+  $form = array();
+  $form['input']= array(
+    '#title' => 'Input',
+    '#type' => 'textfield',
+    '#description' => t('Enter a string'),
+    '#required' => TRUE,
+  );
+  $form['direction']= array(
+    '#type' => 'textfield',
+    '#description' => t('Enter left or right'),
+    '#element_validate' => array('element_validate_direction'),
+    '#required' => TRUE,
+  );
+  $form['amount']= array(
+    '#type' => 'textfield',
+    '#description' => t('Enter a number'),
+    '#element_validate' => array('element_validate_integer_positive','element_validate_range'),
+    '#required' => TRUE,
+
+  );
+  $form['submit'] = array(
+     '#type' => 'submit',
+     '#value' => 'Ciph',
+   );
+  return $form;
+  }
+  function cipher_form_submit($form, &$form_state){
+     $input = $form_state['values']['input'];
+     $direction = $form_state['values']['direction'];
+     $number = $form_state['values']['amount'];
+
+     $alph = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
+     $nonAlph = array('!', ' ', '@', '#', '$', '%','^','&','*');
+     $inputArray = str_split($input);
+     $result = null;
+     for($i=0; $i<count($inputArray); $i++){
+       for($j=24; $j<count($alph);$j++){
+         for($b=0; $b<count($nonAlph);$b++){
+           if($inputArray[$i] === $nonAlph[$b]){
+             $result .= $inputArray[$i];
+           }
+         }
+         if($inputArray[$i] === $alph[$j]){
+           if($direction === 'right'){
+             $result .= $alph[$j+$number];
+         }else if($direction === 'left'){
+             $result .= $alph[$j-$number];
+           }
+         }
+       }
+     }
+
+     $_SESSION['cipher_output'] = $result;
+     $form_state['redirect'] = 'cipher_success_page';
+   }
+   function cipher_success(){
+     $answer = $_SESSION['cipher_output'];
+     return $answer;
+   }
+   function element_validate_range($element) {
+    if ($element['#value'] > 10|| $element['#value'] < 0) {
+        form_error($element, t('Number must be less than 10 or greater than 0.'));
+    }
+}
+function element_validate_direction($element) {
+ if (($element['#value'] != 'left') && ($element['#value'] != 'right')) {
+     form_error($element, t('must be left or right'));
+ }
+}
