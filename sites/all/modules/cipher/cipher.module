@@ -9,10 +9,10 @@
      'page arguments' => array('cipher_form'),
    );
    $items['cipher_success_page'] = array(
-  'title' => "Success",
-  'page callback' => 'cipher_success',
-  'access callback' => TRUE,
-  'type' => MENU_CALLBACK,
+    'title' => "Success",
+    'page callback' => 'cipher_success',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
   );
    return $items;
  }
@@ -44,35 +44,40 @@ function cipher_form(){
    );
   return $form;
   }
-  function cipher_form_submit($form, &$form_state){
-     $input = $form_state['values']['input'];
-     $direction = $form_state['values']['direction'];
-     $number = $form_state['values']['amount'];
-
-     $alph = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
-     $nonAlph = array('!', ' ', '@', '#', '$', '%','^','&','*');
-     $inputArray = str_split($input);
-     $result = null;
-     for($i=0; $i<count($inputArray); $i++){
-       for($j=24; $j<count($alph);$j++){
-         for($b=0; $b<count($nonAlph);$b++){
-           if($inputArray[$i] === $nonAlph[$b]){
-             $result .= $inputArray[$i];
-           }
-         }
-         if($inputArray[$i] === $alph[$j]){
-           if($direction === 'right'){
-             $result .= $alph[$j+$number];
-         }else if($direction === 'left'){
-             $result .= $alph[$j-$number];
-           }
-         }
-       }
-     }
-
-     $_SESSION['cipher_output'] = $result;
-     $form_state['redirect'] = 'cipher_success_page';
+function cipher_form_submit($form, &$form_state) {
+$clicks = $number = $form_state['values']['amount'];
+$input = $form_state['values']['input'];
+$direction = $form_state['values']['direction'];
+$output = "";
+$str_len = strlen($input);
+ for($i=0;$i<$str_len;$i++) {
+   $cur_char = ord(substr($input,$i,1));
+   if(($cur_char > 64 && $cur_char < 91)&&($direction === 'right')) {
+        $cur_char = $cur_char - 65;
+        $cur_char = ($cur_char + $clicks)%26 + 65;
+    } elseif (($cur_char > 96 && $cur_char < 123)&&($direction ==='right')) {
+        $cur_char = $cur_char - 97;
+        $cur_char = ($cur_char + $clicks)%26 + 97;
+    } elseif (($cur_char > 64 && $cur_char < 91)&&($direction === 'left')) {
+        $cur_char = $cur_char - 65;
+        if($cur_char < 97){
+          $cur_char = $cur_char + 25;
+        }
+        $cur_char = ($cur_char - $clicks)%26 + 65;
+    }elseif (($cur_char > 96 && $cur_char < 123)&&($direction ==='left')) {
+        $cur_char = $cur_char - 97;
+        if($cur_char < 97){
+          $cur_char = $cur_char + 25;
+        }
+        $cur_char = ($cur_char - $clicks)%26 + 97;
+    }
+     $output .= chr($cur_char);
    }
+   $_SESSION['cipher_output'] = $output;
+   $form_state['redirect'] = 'cipher_success_page';
+}
+
+
    function cipher_success(){
      $answer = $_SESSION['cipher_output'];
      return $answer;
